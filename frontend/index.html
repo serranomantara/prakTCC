@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catatan Harian</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <script>
+    if (!localStorage.getItem("loggedInUser")) {
+      alert("Silakan login terlebih dahulu.");
+      window.location.href = "login.html";
+    }
+  </script>
+
+  <button onclick="logout()">🚪 Logout</button>
+
+  <div class="judul">
+    <h1>📔 Catatan Harian</h1>
+  </div>
+  <div class="note-form">
+    <input type="hidden" id="note-id">
+    <input type="text" id="note-title" placeholder="Judul catatan">
+    <textarea id="note-content" rows="4" placeholder="Tulis isi catatan di sini..."></textarea>
+    <button onclick="saveNote()">💾 Simpan Catatan</button>
+  </div>
+
+  <div class="notes" id="notes-container"></div>
+
+  <script src="index.js"></script>
+  <script>
+    function logout() {
+      localStorage.removeItem("loggedInUser");
+      window.location.href = "login.html";
+    }
+  </script>
+
+
+</body>
+
+</html>
