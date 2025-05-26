@@ -1,28 +1,24 @@
 FROM node:20-alpine
 
-# Buat user non-root untuk keamanan
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
 WORKDIR /app
 
-# Pertama copy hanya package.json untuk caching layer
-COPY package.json package-lock.json* ./
+COPY package.json package-lock.json ./
 
-# Install dependencies dengan cache yang optimal
 RUN npm install --production --frozen-lockfile && \
     npm cache clean --force
 
-# Copy seluruh aplikasi
 COPY --chown=appuser:appgroup . .
 
-# Set environment variables
 ENV PORT=8080
 ENV NODE_ENV=production
 
-# Gunakan user non-root
 USER appuser
+
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:$PORT/health || exit 1
 
 EXPOSE $PORT
 
-# Gunakan node dengan flag optimasi
-CMD ["node", "--enable-source-maps", "index.js"]
+CMD ["node", "index.js"]
