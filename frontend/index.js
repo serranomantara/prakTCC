@@ -1,3 +1,5 @@
+const API_URL = "https://be-427042664362.us-central1.run.app";
+
 function getNotes() {
     return JSON.parse(localStorage.getItem("notes")) || [];
 }
