@@ -1,11 +1,9 @@
 const API_URL = "https://be-427042664362.us-central1.run.app";
 
-// Ambil token dari localStorage
 function getToken() {
   return localStorage.getItem("token");
 }
 
-// Ambil semua catatan
 async function getNotes() {
   try {
     const res = await fetch(`${API_URL}/notes`, {
@@ -21,7 +19,6 @@ async function getNotes() {
   }
 }
 
-// Simpan atau update catatan
 async function saveNote() {
   const title = document.getElementById("note-title").value;
   const content = document.getElementById("note-content").value;
@@ -51,7 +48,6 @@ async function saveNote() {
   }
 }
 
-// Tampilkan semua catatan ke halaman
 async function renderNotes() {
   const notes = await getNotes();
   const container = document.getElementById("notes-container");
@@ -72,14 +68,12 @@ async function renderNotes() {
   });
 }
 
-// Edit catatan
 function editNote(id, title, content) {
   document.getElementById("note-id").value = id;
   document.getElementById("note-title").value = title;
   document.getElementById("note-content").value = content;
 }
 
-// Hapus catatan
 async function deleteNote(id) {
   if (!confirm("Yakin ingin menghapus catatan ini?")) return;
 
@@ -96,14 +90,12 @@ async function deleteNote(id) {
   }
 }
 
-// Reset form input
 function resetForm() {
   document.getElementById("note-id").value = "";
   document.getElementById("note-title").value = "";
   document.getElementById("note-content").value = "";
 }
 
-// Login
 async function login() {
   const username = document.getElementById("login-username").value;
   const password = document.getElementById("login-password").value;
@@ -128,7 +120,6 @@ async function login() {
   }
 }
 
-// Register
 async function register() {
   const username = document.getElementById("register-username").value;
   const password = document.getElementById("register-password").value;
@@ -157,7 +148,6 @@ async function register() {
   }
 }
 
-// Saat halaman dimuat, render catatan
 if (window.location.pathname.includes("index.html")) {
   document.addEventListener("DOMContentLoaded", renderNotes);
 }
