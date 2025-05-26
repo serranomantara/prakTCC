@@ -1,27 +1,33 @@
 steps:
-  # 1. Build Docker image untuk backend dari direktori 'backend'
+  # 1. Build Docker image
   - name: "gcr.io/cloud-builders/docker"
     dir: "backend"
     args: ["build", "-t", "gcr.io/$PROJECT_ID/catatan", "."]
 
-  # 2. Push ke Container Registry
+  # 2. Push image
   - name: "gcr.io/cloud-builders/docker"
     args: ["push", "gcr.io/$PROJECT_ID/catatan"]
 
-  # 3. Deploy ke Cloud Run tanpa --port
+  # 3. Deploy to Cloud Run - VERSION YANG DIPERBAIKI
   - name: "gcr.io/cloud-builders/gcloud"
-    entrypoint: gcloud
     args:
-      [
-        "run", "deploy", "be",
-        "--image", "gcr.io/$PROJECT_ID/catatan",
-        "--timeout", "1000s",
-        "--region", "us-central1",
-        "--platform", "managed",
-        "--allow-unauthenticated",
-        "--set-env-vars",
-        "ACCESS_TOKEN_SECRET=${_ACCESS_TOKEN_SECRET},REFRESH_TOKEN_SECRET=${_REFRESH_TOKEN_SECRET},DB_HOST=${_DB_HOST},DB_NAME=${_DB_NAME},DB_PASSWORD=${_DB_PASSWORD},DB_USERNAME=${_DB_USERNAME}"
-      ]
+      - "run"
+      - "deploy"
+      - "be"
+      - "--image=gcr.io/$PROJECT_ID/catatan"
+      - "--port=8080"  # TAMBAHKAN INI
+      - "--region=us-central1"
+      - "--platform=managed"
+      - "--allow-unauthenticated"
+      - "--timeout=300s"  # Waktu lebih realistis
+      - "--set-env-vars=ACCESS_TOKEN_SECRET=${_ACCESS_TOKEN_SECRET}"
+      - "--set-env-vars=REFRESH_TOKEN_SECRET=${_REFRESH_TOKEN_SECRET}"
+      - "--set-env-vars=DB_HOST=${_DB_HOST}"
+      - "--set-env-vars=DB_NAME=${_DB_NAME}"
+      - "--set-env-vars=DB_PASSWORD=${_DB_PASSWORD}"
+      - "--set-env-vars=DB_USERNAME=${_DB_USERNAME}"
+      - "--set-env-vars=NODE_ENV=production"  # TAMBAHKAN INI
+      - "--min-instances=1"  # Untuk menghindari cold start
 
 options:
   logging: CLOUD_LOGGING_ONLY
