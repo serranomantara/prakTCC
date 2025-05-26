@@ -1,14 +1,28 @@
 FROM node:20-alpine
 
+# Buat user non-root untuk keamanan
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install --production
+# Pertama copy hanya package.json untuk caching layer
+COPY package.json package-lock.json* ./
 
-COPY . .
+# Install dependencies dengan cache yang optimal
+RUN npm install --production --frozen-lockfile && \
+    npm cache clean --force
 
-# Gunakan PORT dari environment Cloud Run
+# Copy seluruh aplikasi
+COPY --chown=appuser:appgroup . .
+
+# Set environment variables
 ENV PORT=8080
-EXPOSE 8080
+ENV NODE_ENV=production
 
-CMD ["node", "index.js"]
+# Gunakan user non-root
+USER appuser
+
+EXPOSE $PORT
+
+# Gunakan node dengan flag optimasi
+CMD ["node", "--enable-source-maps", "index.js"]
