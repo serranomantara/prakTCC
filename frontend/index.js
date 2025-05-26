@@ -1,120 +1,163 @@
-function getNotes() {
-    return JSON.parse(localStorage.getItem("notes")) || [];
+const API_URL = "https://be-427042664362.us-central1.run.app";
+
+// Ambil token dari localStorage
+function getToken() {
+  return localStorage.getItem("token");
 }
 
-function saveNote() {
-    const title = document.getElementById("note-title").value;
-    const content = document.getElementById("note-content").value;
-    const id = document.getElementById("note-id").value;
+// Ambil semua catatan
+async function getNotes() {
+  try {
+    const res = await fetch(`${API_URL}/notes`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`
+      }
+    });
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Gagal mengambil catatan:", error);
+    return [];
+  }
+}
 
-    if (!title || !content) {
-        alert("Judul dan isi catatan harus diisi.");
-        return;
-    }
+// Simpan atau update catatan
+async function saveNote() {
+  const title = document.getElementById("note-title").value;
+  const content = document.getElementById("note-content").value;
+  const id = document.getElementById("note-id").value;
 
-    const notes = getNotes();
+  if (!title || !content) {
+    alert("Judul dan isi catatan harus diisi.");
+    return;
+  }
 
-    if (id) {
-        const index = notes.findIndex(n => n.id === id);
-        notes[index] = {
-            id,
-            title,
-            content
-        };
-    } else {
-        notes.push({
-            id: Date.now().toString(),
-            title,
-            content
-        });
-    }
+  const method = id ? "PUT" : "POST";
+  const endpoint = id ? `${API_URL}/notes/${id}` : `${API_URL}/notes`;
 
-    localStorage.setItem("notes", JSON.stringify(notes));
+  try {
+    await fetch(endpoint, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getToken()}`
+      },
+      body: JSON.stringify({ title, content })
+    });
     resetForm();
     renderNotes();
+  } catch (error) {
+    console.error("Gagal menyimpan catatan:", error);
+  }
 }
 
-function renderNotes() {
-    const notes = getNotes();
-    const container = document.getElementById("notes-container");
-    container.innerHTML = "";
+// Tampilkan semua catatan ke halaman
+async function renderNotes() {
+  const notes = await getNotes();
+  const container = document.getElementById("notes-container");
+  container.innerHTML = "";
 
-    notes.forEach(note => {
-        const div = document.createElement("div");
-        div.className = "note";
-        div.innerHTML = `
-          <h3>${note.title}</h3>
-          <p>${note.content}</p>
-          <div class="actions">
-            <button onclick="editNote('${note.id}')">✏️ Edit</button>
-            <button onclick="deleteNote('${note.id}')">🗑️ Hapus</button>
-          </div>
-        `;
-        container.appendChild(div);
+  notes.forEach(note => {
+    const div = document.createElement("div");
+    div.className = "note";
+    div.innerHTML = `
+      <h3>${note.title}</h3>
+      <p>${note.content}</p>
+      <div class="actions">
+        <button onclick="editNote('${note.id}', '${note.title}', \`${note.content}\`)">✏️ Edit</button>
+        <button onclick="deleteNote('${note.id}')">🗑️ Hapus</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// Edit catatan
+function editNote(id, title, content) {
+  document.getElementById("note-id").value = id;
+  document.getElementById("note-title").value = title;
+  document.getElementById("note-content").value = content;
+}
+
+// Hapus catatan
+async function deleteNote(id) {
+  if (!confirm("Yakin ingin menghapus catatan ini?")) return;
+
+  try {
+    await fetch(`${API_URL}/notes/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${getToken()}`
+      }
     });
-}
-
-function editNote(id) {
-    const notes = getNotes();
-    const note = notes.find(n => n.id === id);
-    document.getElementById("note-id").value = note.id;
-    document.getElementById("note-title").value = note.title;
-    document.getElementById("note-content").value = note.content;
-}
-
-function deleteNote(id) {
-    if (!confirm("Yakin ingin menghapus catatan ini?")) return;
-    let notes = getNotes();
-    notes = notes.filter(n => n.id !== id);
-    localStorage.setItem("notes", JSON.stringify(notes));
     renderNotes();
+  } catch (error) {
+    console.error("Gagal menghapus catatan:", error);
+  }
 }
 
+// Reset form input
 function resetForm() {
-    document.getElementById("note-id").value = "";
-    document.getElementById("note-title").value = "";
-    document.getElementById("note-content").value = "";
+  document.getElementById("note-id").value = "";
+  document.getElementById("note-title").value = "";
+  document.getElementById("note-content").value = "";
 }
 
-renderNotes();
+// Login
+async function login() {
+  const username = document.getElementById("login-username").value;
+  const password = document.getElementById("login-password").value;
 
-function login() {
-    const username = document.getElementById("login-username").value;
-    const password = document.getElementById("login-password").value;
-
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const user = users.find(u => u.username === username && u.password === password);
-
-    if (user) {
-        localStorage.setItem("loggedInUser", username);
-        window.location.href = "index.html";
-    } else {
-        alert("Username atau password salah.");
-    }
-}
-
-function register() {
-    const username = document.getElementById("register-username").value;
-    const password = document.getElementById("register-password").value;
-
-    if (!username || !password) {
-        alert("Semua field wajib diisi.");
-        return;
-    }
-
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const userExists = users.some(u => u.username === username);
-
-    if (userExists) {
-        alert("Username sudah digunakan.");
-        return;
-    }
-
-    users.push({
-        username,
-        password
+  try {
+    const res = await fetch(`${API_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
     });
-    localStorage.setItem("users", JSON.stringify(users));
+
+    if (!res.ok) {
+      alert("Username atau password salah.");
+      return;
+    }
+
+    const data = await res.json();
+    localStorage.setItem("token", data.accessToken);
+    window.location.href = "index.html";
+  } catch (error) {
+    console.error("Login gagal:", error);
+  }
+}
+
+// Register
+async function register() {
+  const username = document.getElementById("register-username").value;
+  const password = document.getElementById("register-password").value;
+
+  if (!username || !password) {
+    alert("Semua field wajib diisi.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+
+    if (!res.ok) {
+      alert("Registrasi gagal.");
+      return;
+    }
+
     alert("Pendaftaran berhasil. Silakan login.");
     window.location.href = "login.html";
+  } catch (error) {
+    console.error("Registrasi gagal:", error);
+  }
+}
+
+// Saat halaman dimuat, render catatan
+if (window.location.pathname.includes("index.html")) {
+  document.addEventListener("DOMContentLoaded", renderNotes);
 }
