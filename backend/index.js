@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 
 // Middleware
 app.use(cors({
-  origin: 'https://fe-040-dot-b-02-451105.uc.r.appspot.com',
+  origin: 'https://fe-003-dot-e-01-453413.as.r.appspot.com',
   credentials: true
 }));
 app.use(express.json());
