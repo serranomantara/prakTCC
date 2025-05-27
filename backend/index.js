@@ -11,7 +11,6 @@ const PORT = 5000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Middleware
 app.use(cors({
   origin: 'https://fe-040-dot-b-02-451105.uc.r.appspot.com',
   credentials: true
@@ -20,7 +19,6 @@ app.use(express.json());
 app.use(router);
 app.use(express.static(path.join(__dirname, "../frontend"))); 
 
-// Cek koneksi database
 (async () => {
     try {
         await db.authenticate();
@@ -30,7 +28,6 @@ app.use(express.static(path.join(__dirname, "../frontend")));
     }
 })();
 
-// Default route
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "../frontend", "index.html"));
 });
